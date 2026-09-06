@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-charcoal-950 text-brand-white antialiased;
+  }
+
+  /* Scrollbar discreta, combinando com o tema escuro */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-charcoal-900;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-charcoal-600 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-charcoal-500;
+  }
+}
+
+@layer components {
+  /* Título estilo placa de trailer de lanche: condensado, maiúsculo, com leve contorno */
+  .display-title {
+    @apply font-display font-black uppercase tracking-wide;
+  }
+}

@@ -1,0 +1,19 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+# Variáveis de ambiente (chaves do Supabase) — NUNCA versionar o .env
+# real. O .env.example (sem valores reais) continua versionado normalmente.
+.env
+.env.*
+!.env.example
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
