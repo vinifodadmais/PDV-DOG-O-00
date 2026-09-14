@@ -5,7 +5,7 @@ import { cn } from "@/utils/cn";
 import { generateId } from "@/utils/id";
 import { formatarMoeda, arredondarMoeda } from "@/utils/currency";
 import type { NovoPagamentoInput } from "@/services";
-import type { FormaPagamento, Pedido } from "@/types";
+import type { FormaPagamento, OpcaoConsumoLocal, Pedido, StatusPagamento } from "@/types";
 
 type MetodoPagamento = "dinheiro" | "pix" | "debito" | "credito" | "misto";
 
@@ -21,6 +21,10 @@ interface PagamentoModalProps {
   processando: boolean;
   erro: string | null;
   pedidoFinalizado: Pedido | null;
+  /** Pago / Não pago escolhido no carrinho — decide se esta tela pede a forma de pagamento ou só confirma. */
+  statusPagamento: StatusPagamento;
+  /** Comer aqui / Levar escolhido no carrinho — só usado para exibição na tela de confirmação. */
+  opcaoConsumo: OpcaoConsumoLocal;
   statusImpressao?: "ocioso" | "imprimindo" | "sucesso" | "erro";
   erroImpressao?: string | null;
   onClose: () => void;
@@ -52,6 +56,16 @@ const ROTULOS_FORMA: Record<FormaPagamento, string> = {
   outro: "Outro",
 };
 
+const ROTULOS_STATUS_PAGAMENTO: Record<StatusPagamento, string> = {
+  pago: "Pago",
+  nao_pago: "Não pago",
+};
+
+const ROTULOS_OPCAO_CONSUMO: Record<OpcaoConsumoLocal, string> = {
+  comer_aqui: "Comer aqui",
+  levar: "Levar",
+};
+
 const campoClassName =
   "rounded-md border border-charcoal-700 bg-charcoal-800 px-3 py-2 text-sm text-brand-white placeholder:text-charcoal-500 focus:border-brand-mustard focus:outline-none focus:ring-1 focus:ring-brand-mustard";
 
@@ -66,6 +80,8 @@ export function PagamentoModal({
   processando,
   erro,
   pedidoFinalizado,
+  statusPagamento,
+  opcaoConsumo,
   statusImpressao = "ocioso",
   erroImpressao = null,
   onClose,
@@ -165,6 +181,22 @@ export function PagamentoModal({
             <p className="text-sm text-charcoal-400">Venda finalizada com sucesso</p>
           </div>
 
+          <div className="flex w-full items-center justify-center gap-2">
+            <span
+              className={cn(
+                "rounded-md border px-2.5 py-1 text-xs font-bold uppercase tracking-wide",
+                pedidoFinalizado.statusPagamento === "pago"
+                  ? "border-brand-mustard bg-brand-mustard/15 text-brand-mustard"
+                  : "border-brand-red bg-brand-red/15 text-brand-red-light"
+              )}
+            >
+              {ROTULOS_STATUS_PAGAMENTO[pedidoFinalizado.statusPagamento]}
+            </span>
+            <span className="rounded-md border border-charcoal-700 bg-charcoal-800 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-charcoal-200">
+              {ROTULOS_OPCAO_CONSUMO[pedidoFinalizado.opcaoConsumo]}
+            </span>
+          </div>
+
           <div className="w-full space-y-1.5 rounded-md border border-charcoal-800 bg-charcoal-800/50 p-3 text-left text-sm">
             {pedidoFinalizado.itens.map((item) => (
               <div key={item.id} className="flex justify-between text-charcoal-300">
@@ -176,7 +208,7 @@ export function PagamentoModal({
             ))}
 
             <div className="flex justify-between border-t border-charcoal-700 pt-1.5 font-semibold text-brand-white">
-              <span>Total pago</span>
+              <span>{pedidoFinalizado.statusPagamento === "pago" ? "Total pago" : "Total (não pago)"}</span>
               <span className="tabular-nums">{formatarMoeda(pedidoFinalizado.total)}</span>
             </div>
 
@@ -252,6 +284,54 @@ export function PagamentoModal({
     );
   }
 
+  // Venda marcada como "Não pago" no carrinho — pula a seleção de forma de
+  // pagamento (não existe forma nenhuma pra escolher) e só pede a
+  // confirmação final, reaproveitando o mesmo modal/fluxo de finalização.
+  if (statusPagamento === "nao_pago") {
+    return (
+      <Modal open={open} onClose={onClose} title="Confirmar venda sem pagamento" widthClassName="max-w-md">
+        <div className="space-y-4">
+          <div className="rounded-md border border-brand-red/40 bg-brand-red/10 px-4 py-3 text-center">
+            <p className="text-xs font-bold uppercase tracking-wide text-brand-red-light">Não pago</p>
+            <p className="display-title text-3xl text-brand-white">{formatarMoeda(total)}</p>
+            <p className="mt-1 text-xs text-charcoal-300">
+              Nenhum valor será lançado no caixa — o pedido fica registrado como pendente.
+            </p>
+            <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-charcoal-300">
+              Consumo: {ROTULOS_OPCAO_CONSUMO[opcaoConsumo]}
+            </p>
+          </div>
+
+          {erro && (
+            <p className="flex items-center gap-2 rounded-md border border-brand-red/40 bg-brand-red/10 px-3 py-2 text-xs text-brand-red-light">
+              <Icon name="alert" size={14} className="shrink-0" />
+              {erro}
+            </p>
+          )}
+
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={processando}
+              className="rounded-md border border-charcoal-700 px-4 py-2 text-sm font-medium text-charcoal-300 transition-colors hover:border-charcoal-500 hover:text-brand-white disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={() => onConfirmarPagamento([])}
+              disabled={processando}
+              className="rounded-md bg-brand-red px-5 py-2 text-sm font-bold text-brand-white transition-colors hover:bg-brand-red-dark disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {processando ? "Finalizando..." : "Finalizar sem pagamento"}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
+
   // Tela de seleção da forma de pagamento.
   return (
     <Modal open={open} onClose={onClose} title="Pagamento" widthClassName="max-w-lg">
@@ -259,6 +339,9 @@ export function PagamentoModal({
         <div className="rounded-md border border-charcoal-800 bg-charcoal-800/50 px-4 py-3 text-center">
           <p className="text-xs uppercase tracking-wide text-charcoal-400">Total a pagar</p>
           <p className="display-title text-3xl text-brand-white">{formatarMoeda(total)}</p>
+          <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-charcoal-400">
+            Consumo: {ROTULOS_OPCAO_CONSUMO[opcaoConsumo]}
+          </p>
         </div>
 
         <div className="grid grid-cols-5 gap-2">

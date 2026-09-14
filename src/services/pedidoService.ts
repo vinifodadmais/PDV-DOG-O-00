@@ -102,6 +102,10 @@ export async function criarPedido(input: NovoPedidoInput): Promise<Pedido> {
     numero,
     status: "aberto",
     tipoConsumo: input.tipoConsumo,
+    // Pedido local (legado) ainda em aberto — sem pagamento registrado
+    // ainda, então "nao_pago"/"levar" são os defaults mais neutros aqui.
+    statusPagamento: "nao_pago",
+    opcaoConsumo: "levar",
     itens,
     pagamentos: [],
     subtotal,
@@ -240,6 +244,12 @@ export async function finalizarVenda(input: FinalizarVendaInput): Promise<Pedido
     numero,
     status: "recebido",
     tipoConsumo: input.tipoConsumo ?? "balcao",
+    // Este fluxo legado (localStorage) só finaliza depois de conferir que
+    // o valor pago cobre o total (ver `PagamentoInsuficienteError` acima)
+    // — ou seja, aqui a venda é sempre "pago". "levar" é o default neutro
+    // pra Comer aqui/Levar, que este fluxo legado não coleta.
+    statusPagamento: "pago",
+    opcaoConsumo: "levar",
     itens,
     pagamentos,
     subtotal,

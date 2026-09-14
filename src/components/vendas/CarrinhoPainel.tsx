@@ -28,6 +28,8 @@ export function CarrinhoPainel({
     tipoConsumo,
     taxaEntrega,
     nomeCliente,
+    statusPagamento,
+    opcaoConsumo,
     subtotal,
     total,
     quantidadeTotal,
@@ -38,6 +40,8 @@ export function CarrinhoPainel({
     definirTipoConsumo,
     definirTaxaEntrega,
     definirNomeCliente,
+    definirStatusPagamento,
+    definirOpcaoConsumo,
     limparCarrinho,
   } = carrinho;
 
@@ -193,6 +197,64 @@ export function CarrinhoPainel({
           <div className="flex items-center justify-between border-t border-charcoal-800 pt-2 text-base font-bold text-brand-white">
             <span className="display-title">Total</span>
             <span className="tabular-nums">{formatarMoeda(total)}</span>
+          </div>
+        </div>
+
+        <div>
+          <p className="mb-1 text-xs font-medium text-charcoal-300">Pagamento</p>
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              onClick={() => definirStatusPagamento("pago")}
+              className={
+                statusPagamento === "pago"
+                  ? "rounded-md bg-brand-mustard px-2 py-1.5 text-xs font-semibold text-charcoal-950"
+                  : "rounded-md border border-charcoal-700 px-2 py-1.5 text-xs font-medium text-charcoal-300 transition-colors hover:border-charcoal-500 hover:text-brand-white"
+              }
+            >
+              Pago
+            </button>
+            <button
+              type="button"
+              onClick={() => definirStatusPagamento("nao_pago")}
+              className={
+                statusPagamento === "nao_pago"
+                  ? "rounded-md bg-brand-mustard px-2 py-1.5 text-xs font-semibold text-charcoal-950"
+                  : "rounded-md border border-charcoal-700 px-2 py-1.5 text-xs font-medium text-charcoal-300 transition-colors hover:border-charcoal-500 hover:text-brand-white"
+              }
+            >
+              Não pago
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <p className="mb-1 text-xs font-medium text-charcoal-300">Consumo</p>
+          <div className="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              onClick={() => definirOpcaoConsumo("comer_aqui")}
+              disabled={tipoConsumo === "entrega"}
+              title={tipoConsumo === "entrega" ? "Não disponível para Entrega" : undefined}
+              className={
+                opcaoConsumo === "comer_aqui"
+                  ? "rounded-md bg-brand-mustard px-2 py-1.5 text-xs font-semibold text-charcoal-950 disabled:cursor-not-allowed disabled:opacity-40"
+                  : "rounded-md border border-charcoal-700 px-2 py-1.5 text-xs font-medium text-charcoal-300 transition-colors hover:border-charcoal-500 hover:text-brand-white disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-charcoal-700 disabled:hover:text-charcoal-300"
+              }
+            >
+              Comer aqui
+            </button>
+            <button
+              type="button"
+              onClick={() => definirOpcaoConsumo("levar")}
+              className={
+                opcaoConsumo === "levar"
+                  ? "rounded-md bg-brand-mustard px-2 py-1.5 text-xs font-semibold text-charcoal-950"
+                  : "rounded-md border border-charcoal-700 px-2 py-1.5 text-xs font-medium text-charcoal-300 transition-colors hover:border-charcoal-500 hover:text-brand-white"
+              }
+            >
+              Levar
+            </button>
           </div>
         </div>
 

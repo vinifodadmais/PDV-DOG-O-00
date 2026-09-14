@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { EntityId, Produto, TipoConsumo } from "@/types";
+import type { EntityId, OpcaoConsumoLocal, Produto, StatusPagamento, TipoConsumo } from "@/types";
 import { arredondarMoeda } from "@/utils/currency";
 
 export interface AdicionalCarrinho {
@@ -31,6 +31,10 @@ export interface UseCarrinhoResult {
   taxaEntrega: number;
   /** Nome do cliente — opcional, string vazia é válida. */
   nomeCliente: string;
+  /** "nao_pago" por padrão — o operador confirma/ajusta antes de finalizar. */
+  statusPagamento: StatusPagamento;
+  /** "levar" por padrão — o operador confirma/ajusta antes de finalizar. */
+  opcaoConsumo: OpcaoConsumoLocal;
   subtotal: number;
   total: number;
   quantidadeTotal: number;
@@ -49,6 +53,8 @@ export interface UseCarrinhoResult {
   definirTipoConsumo: (tipo: TipoConsumo) => void;
   definirTaxaEntrega: (valor: number) => void;
   definirNomeCliente: (texto: string) => void;
+  definirStatusPagamento: (status: StatusPagamento) => void;
+  definirOpcaoConsumo: (opcao: OpcaoConsumoLocal) => void;
   limparCarrinho: () => void;
 }
 
@@ -68,6 +74,10 @@ export function useCarrinho(): UseCarrinhoResult {
   const [tipoConsumo, setTipoConsumo] = useState<TipoConsumo>("balcao");
   const [taxaEntrega, setTaxaEntrega] = useState(0);
   const [nomeCliente, setNomeCliente] = useState("");
+  // Padrões conforme especificado: venda começa "Não pago" e "Levar"; o
+  // operador confirma ou troca antes de finalizar.
+  const [statusPagamento, setStatusPagamento] = useState<StatusPagamento>("nao_pago");
+  const [opcaoConsumo, setOpcaoConsumo] = useState<OpcaoConsumoLocal>("levar");
 
   const subtotal = useMemo(
     () => itens.reduce((soma, item) => soma + calcularSubtotalItem(item), 0),
@@ -186,6 +196,14 @@ export function useCarrinho(): UseCarrinhoResult {
     if (tipo !== "entrega") {
       setTaxaEntrega(0);
     }
+    // "Comer aqui" não faz sentido pra um pedido de entrega — o botão
+    // correspondente fica desabilitado na tela (ver CarrinhoPainel), e
+    // aqui garantimos que uma seleção anterior de "comer_aqui" não fique
+    // "esquecida" (ativa, porém com o botão desabilitado) ao trocar pra
+    // entrega. Mesmo padrão da taxa de entrega acima.
+    if (tipo === "entrega") {
+      setOpcaoConsumo((atual) => (atual === "comer_aqui" ? "levar" : atual));
+    }
   }, []);
 
   const definirTaxaEntrega = useCallback((valor: number) => {
@@ -197,12 +215,22 @@ export function useCarrinho(): UseCarrinhoResult {
     setNomeCliente(texto);
   }, []);
 
+  const definirStatusPagamento = useCallback((status: StatusPagamento) => {
+    setStatusPagamento(status);
+  }, []);
+
+  const definirOpcaoConsumo = useCallback((opcao: OpcaoConsumoLocal) => {
+    setOpcaoConsumo(opcao);
+  }, []);
+
   const limparCarrinho = useCallback(() => {
     setItens([]);
     setDesconto(0);
     setTipoConsumo("balcao");
     setTaxaEntrega(0);
     setNomeCliente("");
+    setStatusPagamento("nao_pago");
+    setOpcaoConsumo("levar");
   }, []);
 
   return {
@@ -211,6 +239,8 @@ export function useCarrinho(): UseCarrinhoResult {
     tipoConsumo,
     taxaEntrega,
     nomeCliente,
+    statusPagamento,
+    opcaoConsumo,
     subtotal,
     total,
     quantidadeTotal,
@@ -225,6 +255,8 @@ export function useCarrinho(): UseCarrinhoResult {
     definirTipoConsumo,
     definirTaxaEntrega,
     definirNomeCliente,
+    definirStatusPagamento,
+    definirOpcaoConsumo,
     limparCarrinho,
   };
 }

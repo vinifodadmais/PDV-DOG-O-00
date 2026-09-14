@@ -31,6 +31,16 @@ const ROTULOS_TIPO_CONSUMO: Record<string, string> = {
   entrega: "Entrega",
 };
 
+const ROTULOS_STATUS_PAGAMENTO: Record<string, string> = {
+  pago: "Pago",
+  nao_pago: "Não pago",
+};
+
+const ROTULOS_OPCAO_CONSUMO: Record<string, string> = {
+  comer_aqui: "Comer aqui",
+  levar: "Levar",
+};
+
 function formatarDataHora(iso: string): string {
   return new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "medium" });
 }
@@ -59,6 +69,20 @@ export function PedidoDetalheModal({
             <p className="text-xs text-charcoal-400">
               {ROTULOS_TIPO_CONSUMO[pedido.tipoConsumo] ?? pedido.tipoConsumo}
             </p>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              <span
+                className={
+                  pedido.statusPagamento === "pago"
+                    ? "rounded border border-brand-mustard/40 bg-brand-mustard/10 px-1.5 py-0.5 text-[11px] font-semibold text-brand-mustard"
+                    : "rounded border border-brand-red/40 bg-brand-red/10 px-1.5 py-0.5 text-[11px] font-semibold text-brand-red-light"
+                }
+              >
+                {ROTULOS_STATUS_PAGAMENTO[pedido.statusPagamento] ?? pedido.statusPagamento}
+              </span>
+              <span className="rounded border border-charcoal-700 bg-charcoal-800 px-1.5 py-0.5 text-[11px] font-semibold text-charcoal-200">
+                {ROTULOS_OPCAO_CONSUMO[pedido.opcaoConsumo] ?? pedido.opcaoConsumo}
+              </span>
+            </div>
           </div>
           <StatusBadge status={pedido.status} />
         </div>

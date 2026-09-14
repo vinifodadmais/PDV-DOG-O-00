@@ -9,6 +9,8 @@ export type {
   StatusPedido,
   TipoConsumo,
   FormaPagamento,
+  StatusPagamento,
+  OpcaoConsumoLocal,
 } from "./pedido";
 export type {
   SessaoCaixa,

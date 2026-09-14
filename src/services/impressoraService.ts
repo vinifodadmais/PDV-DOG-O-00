@@ -157,6 +157,8 @@ export async function imprimirTeste(): Promise<void> {
     numero: 0,
     status: "finalizado",
     tipoConsumo: "balcao",
+    statusPagamento: "pago",
+    opcaoConsumo: "levar",
     itens: [
       {
         id: "item-teste",

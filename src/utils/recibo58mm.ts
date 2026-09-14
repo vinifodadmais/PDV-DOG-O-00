@@ -1,6 +1,6 @@
 import { ImpressoraEscPosBuilder } from "./escpos";
 import { formatarMoeda } from "./currency";
-import type { FormaPagamento, Pedido, TipoConsumo } from "@/types";
+import type { FormaPagamento, OpcaoConsumoLocal, Pedido, StatusPagamento, TipoConsumo } from "@/types";
 
 /**
  * Largura padrão, em caracteres, para o papel de 58mm com a fonte
@@ -34,6 +34,18 @@ const ROTULOS_PEDIDO_RECIBO: Record<TipoConsumo, string> = {
   balcao: "RETIRADA",
   viagem: "VIAGEM",
   entrega: "ENTREGA",
+};
+
+/** Rótulo em maiúsculas pro destaque "PAGAMENTO: ..." do recibo. */
+const ROTULOS_STATUS_PAGAMENTO_RECIBO: Record<StatusPagamento, string> = {
+  pago: "PAGO",
+  nao_pago: "NAO PAGO",
+};
+
+/** Rótulo em maiúsculas pro destaque "CONSUMO: ..." do recibo. */
+const ROTULOS_OPCAO_CONSUMO_RECIBO: Record<OpcaoConsumoLocal, string> = {
+  comer_aqui: "COMER AQUI",
+  levar: "LEVAR",
 };
 
 function quebrarTexto(texto: string, largura: number): string[] {
@@ -178,7 +190,20 @@ export function montarReciboEscPos(pedido: Pedido, opcoes: OpcoesRecibo = {}): U
   }
   builder.negrito(false);
 
-  builder.texto(linhaSeparadora(largura));
+  // Destaque de PAGAMENTO/CONSUMO — independente da forma de pagamento e
+  // do tipo de pedido (Retirada/Entrega) já impressos acima. Impressora
+  // térmica é preto e branco, então a diferenciação NUNCA depende de cor:
+  // usa negrito + centralizado + separadores, e o próprio texto já deixa
+  // o estado explícito ("PAGO"/"NAO PAGO", "COMER AQUI"/"LEVAR").
+  builder.texto(linhaSeparadora(largura, "="));
+  builder.alinhar("centro");
+  builder.negrito(true);
+  builder.texto(`PAGAMENTO: ${ROTULOS_STATUS_PAGAMENTO_RECIBO[pedido.statusPagamento]}`);
+  builder.texto(`CONSUMO: ${ROTULOS_OPCAO_CONSUMO_RECIBO[pedido.opcaoConsumo]}`);
+  builder.negrito(false);
+  builder.alinhar("esquerda");
+  builder.texto(linhaSeparadora(largura, "="));
+
   builder.texto("Forma de pagamento:");
   let trocoTotal = 0;
   if (pedido.pagamentos.length === 0) {

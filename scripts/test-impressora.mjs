@@ -58,6 +58,8 @@ function pedidoBase(overrides = {}) {
     numero: 42,
     status: "recebido",
     tipoConsumo: "balcao",
+    statusPagamento: "pago",
+    opcaoConsumo: "levar",
     itens: [
       { id: "i1", produtoId: "p1", produtoNome: "Dog Especial", quantidade: 2, precoUnitario: 30, subtotal: 60 },
     ],

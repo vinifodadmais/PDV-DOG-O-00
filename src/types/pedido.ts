@@ -20,6 +20,21 @@ export type TipoConsumo = "balcao" | "viagem" | "entrega";
 export type FormaPagamento = "dinheiro" | "pix" | "debito" | "credito" | "outro";
 
 /**
+ * Status de pagamento do PEDIDO INTEIRO no momento da finalização —
+ * independente da forma de pagamento (`FormaPagamento`) e da lista
+ * `pagamentos`. "nao_pago" é uma venda tipo fiado/pendente: o pedido é
+ * registrado e o estoque baixa normalmente, mas nenhum valor entra no
+ * caixa (a tabela `pagamentos`/`payments` fica vazia nesse caso).
+ */
+export type StatusPagamento = "pago" | "nao_pago";
+
+/**
+ * Onde o cliente vai consumir o pedido — independente de `TipoConsumo`
+ * (balcão/viagem/entrega), que continua existindo sem nenhuma mudança.
+ */
+export type OpcaoConsumoLocal = "comer_aqui" | "levar";
+
+/**
  * Um adicional vinculado a um item do pedido (ex: "Bacon" no X-Burguer).
  * É um produto real (mesmo preço oficial, mesma baixa de estoque) — só
  * que gravado como filho da linha do item principal, nunca como venda
@@ -66,6 +81,10 @@ export interface Pedido extends Timestamped {
   numero: number;
   status: StatusPedido;
   tipoConsumo: TipoConsumo;
+  /** Pago / Não pago (fiado) — ver `StatusPagamento`. */
+  statusPagamento: StatusPagamento;
+  /** Comer aqui / Levar — ver `OpcaoConsumoLocal`. */
+  opcaoConsumo: OpcaoConsumoLocal;
   itens: ItemPedido[];
   pagamentos: Pagamento[];
   subtotal: number;

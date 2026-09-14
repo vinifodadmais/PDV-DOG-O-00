@@ -1,5 +1,14 @@
 import { supabase } from "@/lib/supabase";
-import type { EntityId, FormaPagamento, ItemPedido, Pagamento, Pedido, TipoConsumo } from "@/types";
+import type {
+  EntityId,
+  FormaPagamento,
+  ItemPedido,
+  OpcaoConsumoLocal,
+  Pagamento,
+  Pedido,
+  StatusPagamento,
+  TipoConsumo,
+} from "@/types";
 
 /**
  * ============================================================================
@@ -51,6 +60,10 @@ export interface FinalizarVendaSupabaseInput {
   nomeCliente?: string;
   /** Taxa de entrega — só tem efeito de verdade quando tipoConsumo é "entrega" (a RPC também garante isso do lado do banco). */
   taxaEntrega?: number;
+  /** Pago / Não pago (fiado) — independente de `pagamentos`. Padrão "pago" no lado da RPC. */
+  statusPagamento?: StatusPagamento;
+  /** Comer aqui / Levar — independente de `tipoConsumo`. Padrão "levar" no lado da RPC. */
+  opcaoConsumo?: OpcaoConsumoLocal;
 }
 
 export class VendaNaoConfirmadaError extends Error {
@@ -92,6 +105,8 @@ interface RespostaFinalizeSale {
   items: LinhaItemResolvido[];
   customer_name: string | null;
   delivery_fee: number | string;
+  payment_status: string;
+  dining_option: string;
 }
 
 /** Reconstrói a árvore (item pai + seus adicionais) a partir da lista PLANA que a RPC devolve. */
@@ -153,6 +168,8 @@ export async function finalizarVendaSupabase(
     p_payments: payloadPagamentos,
     p_customer_name: input.nomeCliente?.trim() || null,
     p_delivery_fee: input.taxaEntrega ?? 0,
+    p_payment_status: input.statusPagamento ?? "pago",
+    p_dining_option: input.opcaoConsumo ?? "levar",
   });
 
   if (error) {
@@ -179,6 +196,8 @@ export async function finalizarVendaSupabase(
     numero: linha.order_number,
     status: linha.status as Pedido["status"],
     tipoConsumo: input.tipoConsumo ?? "balcao",
+    statusPagamento: linha.payment_status as StatusPagamento,
+    opcaoConsumo: linha.dining_option as OpcaoConsumoLocal,
     itens,
     pagamentos,
     subtotal: Number(linha.subtotal),

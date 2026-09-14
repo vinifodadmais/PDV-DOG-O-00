@@ -200,6 +200,8 @@ export function Vendas() {
         tipoConsumo: carrinho.tipoConsumo,
         taxaEntrega: carrinho.taxaEntrega,
         nomeCliente: carrinho.nomeCliente.trim() || undefined,
+        statusPagamento: carrinho.statusPagamento,
+        opcaoConsumo: carrinho.opcaoConsumo,
       });
       setPedidoFinalizado(pedido);
       carrinho.limparCarrinho();
@@ -382,6 +384,8 @@ export function Vendas() {
         processando={processandoPagamento}
         erro={erroPagamento}
         pedidoFinalizado={pedidoFinalizado}
+        statusPagamento={carrinho.statusPagamento}
+        opcaoConsumo={carrinho.opcaoConsumo}
         statusImpressao={statusImpressao}
         erroImpressao={erroImpressao}
         onClose={handleFecharModalPagamento}
